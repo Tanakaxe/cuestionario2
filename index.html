@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Hardware y Redes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .welcome-screen, .quiz-screen, .results-screen {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px auto 0;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option:hover {
+            background-color: #f9f9f9;
+        }
+
+        .option.selected {
+            background-color: #e1f5fe;
+            border-color: #3498db;
+        }
+
+        .option input {
+            margin-right: 10px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .results-summary {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .correct {
+            color: #27ae60;
+        }
+
+        .incorrect {
+            color: #e74c3c;
+        }
+
+        .results-details {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border-left: 5px solid #3498db;
+            background-color: #f8f9fa;
+        }
+
+        .result-item.correct {
+            border-left-color: #27ae60;
+        }
+
+        .result-item.incorrect {
+            border-left-color: #e74c3c;
+        }
+
+        .user-answer {
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .correct-answer {
+            font-weight: 600;
+            margin-top: 5px;
+            color: #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .question-text {
+                font-size: 16px;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cuestionario de Hardware y Redes</h1>
+        
+        <!-- Pantalla de bienvenida -->
+        <div id="welcome-screen" class="welcome-screen active">
+            <h2>Bienvenido al Cuestionario</h2>
+            <p>Este cuestionario consta de 10 preguntas sobre hardware y redes de computadoras. Responde todas las preguntas y al final verás tus resultados.</p>
+            
+            <div class="form-group">
+                <label for="student-name">Ingresa tu nombre:</label>
+                <input type="text" id="student-name" placeholder="Escribe tu nombre aquí">
+            </div>
+            
+            <button id="start-btn" disabled>Iniciar Cuestionario</button>
+        </div>
+        
+        <!-- Pantalla del cuestionario -->
+        <div id="quiz-screen" class="quiz-screen">
+            <div id="question-container"></div>
+            
+            <div class="navigation">
+                <button id="prev-btn" disabled>Anterior</button>
+                <button id="next-btn">Siguiente</button>
+            </div>
+        </div>
+        
+        <!-- Pantalla de resultados -->
+        <div id="results-screen" class="results-screen">
+            <h2>Resultados del Cuestionario</h2>
+            
+            <div class="results-summary">
+                <p>Estudiante: <span id="student-result-name"></span></p>
+                <div class="score">
+                    Puntuación: <span id="score"></span>/10
+                </div>
+                <p>Respuestas correctas: <span id="correct-count" class="correct"></span></p>
+                <p>Respuestas incorrectas: <span id="incorrect-count" class="incorrect"></span></p>
+            </div>
+            
+            <div class="results-details" id="results-details"></div>
+            
+            <button id="restart-btn">Realizar otro cuestionario</button>
+        </div>
+    </div>
+
+    <script>
+        // Banco de preguntas (más de 5 para seleccionar 10 aleatorias)
+        const questionBank = [
+            {
+                question: "¿Qué componente de hardware se considera el 'cerebro' de la computadora?",
+                options: ["RAM", "CPU", "GPU", "Disco Duro"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué tipo de memoria es volátil y se borra cuando se apaga la computadora?",
+                options: ["ROM", "RAM", "HDD", "SSD"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué protocolo se utiliza comúnmente para enviar correos electrónicos?",
+                options: ["FTP", "HTTP", "SMTP", "TCP"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué dispositivo se utiliza para conectar una red local a Internet?",
+                options: ["Switch", "Hub", "Router", "Modem"],
+                correctAnswer: 3
+            },
+            {
+                question: "¿Qué significa la sigla 'LAN'?",
+                options: ["Local Area Network", "Large Access Node", "Logical Address Network", "Linked Access Network"],
+                correctAnswer: 0
+            },
+            {
+                question: "¿Qué tipo de cable de red se utiliza más comúnmente en redes Ethernet?",
+                options: ["Coaxial", "Fibra óptica", "Par trenzado", "USB"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué componente es responsable de procesar los gráficos en una computadora?",
+                options: ["CPU", "RAM", "GPU", "PSU"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué dirección IP se utiliza para referirse a la propia computadora en una red local?",
+                options: ["192.168.1.1", "255.255.255.255", "127.0.0.1", "0.0.0.0"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué tipo de memoria es más rápida?",
+                options: ["HDD", "SSD", "RAM", "Cache L1"],
+                correctAnswer: 3
+            },
+            {
+                question: "¿Qué protocolo se utiliza para asignar direcciones IP automáticamente en una red?",
+                options: ["DNS", "HTTP", "DHCP", "FTP"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué componente convierte la energía de CA a CC para la computadora?",
+                options: ["CPU", "GPU", "PSU", "RAM"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué dispositivo amplifica las señales de red para extender su alcance?",
+                options: ["Router", "Switch", "Repetidor", "Modem"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Qué tipo de red cubre un área geográfica extensa, como una ciudad o país?",
+                options: ["LAN", "WAN", "MAN", "PAN"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué puerto se utiliza comúnmente para conexiones SSH seguras?",
+                options: ["21", "22", "80", "443"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué tecnología permite ejecutar múltiples sistemas operativos en una misma máquina física?",
+                options: ["Multitarea", "Multiprocesamiento", "Virtualización", "Hyperthreading"],
+                correctAnswer: 2
+            }
+        ];
+
+        // Variables globales
+        let studentName = "";
+        let currentQuestionIndex = 0;
+        let selectedQuestions = [];
+        let userAnswers = [];
+        let quizCompleted = false;
+
+        // Elementos DOM
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const studentNameInput = document.getElementById('student-name');
+        const startBtn = document.getElementById('start-btn');
+        const questionContainer = document.getElementById('question-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const studentResultName = document.getElementById('student-result-name');
+        const scoreElement = document.getElementById('score');
+        const correctCountElement = document.getElementById('correct-count');
+        const incorrectCountElement = document.getElementById('incorrect-count');
+        const resultsDetails = document.getElementById('results-details');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // Event Listeners
+        studentNameInput.addEventListener('input', toggleStartButton);
+        startBtn.addEventListener('click', startQuiz);
+        prevBtn.addEventListener('click', showPreviousQuestion);
+        nextBtn.addEventListener('click', showNextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Funciones
+        function toggleStartButton() {
+            startBtn.disabled = studentNameInput.value.trim() === '';
+        }
+
+        function startQuiz() {
+            studentName = studentNameInput.value.trim();
+            if (studentName === '') return;
+            
+            // Seleccionar 10 preguntas aleatorias del banco
+            selectedQuestions = getRandomQuestions(10);
+            userAnswers = new Array(selectedQuestions.length).fill(null);
+            
+            // Cambiar a la pantalla del cuestionario
+            welcomeScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            
+            // Mostrar la primera pregunta
+            showQuestion(0);
+        }
+
+        function getRandomQuestions(count) {
+            // Crear una copia del banco de preguntas
+            const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function showQuestion(index) {
+            currentQuestionIndex = index;
+            const question = selectedQuestions[index];
+            
+            // Actualizar navegación
+            prevBtn.disabled = index === 0;
+            nextBtn.textContent = index === selectedQuestions.length - 1 ? 'Finalizar' : 'Siguiente';
+            
+            // Construir la pregunta
+            let questionHTML = `
+                <div class="question-container">
+                    <div class="question-text">Pregunta ${index + 1} de ${selectedQuestions.length}: ${question.question}</div>
+                    <div class="options-container">
+            `;
+            
+            question.options.forEach((option, optionIndex) => {
+                const isSelected = userAnswers[index] === optionIndex;
+                questionHTML += `
+                    <div class="option ${isSelected ? 'selected' : ''}" data-index="${optionIndex}">
+                        <input type="radio" id="option-${optionIndex}" name="question-${index}" ${isSelected ? 'checked' : ''}>
+                        <label for="option-${optionIndex}">${option}</label>
+                    </div>
+                `;
+            });
+            
+            questionHTML += `</div></div>`;
+            questionContainer.innerHTML = questionHTML;
+            
+            // Agregar event listeners a las opciones
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const selectedOptionIndex = parseInt(this.getAttribute('data-index'));
+                    userAnswers[currentQuestionIndex] = selectedOptionIndex;
+                    
+                    // Actualizar la visualización de opciones seleccionadas
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    // Actualizar el radio button
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                });
+            });
+        }
+
+        function showPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function showNextQuestion() {
+            if (currentQuestionIndex < selectedQuestions.length - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            quizCompleted = true;
+            
+            // Calcular resultados
+            let correctAnswers = 0;
+            selectedQuestions.forEach((question, index) => {
+                if (userAnswers[index] === question.correctAnswer) {
+                    correctAnswers++;
+                }
+            });
+            
+            // Mostrar pantalla de resultados
+            quizScreen.classList.remove('active');
+            resultsScreen.classList.add('active');
+            
+            // Actualizar información de resultados
+            studentResultName.textContent = studentName;
+            scoreElement.textContent = correctAnswers;
+            correctCountElement.textContent = correctAnswers;
+            incorrectCountElement.textContent = selectedQuestions.length - correctAnswers;
+            
+            // Mostrar detalles de respuestas
+            resultsDetails.innerHTML = '';
+            selectedQuestions.forEach((question, index) => {
+                const isCorrect = userAnswers[index] === question.correctAnswer;
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item ${isCorrect ? 'correct' : 'incorrect'}`;
+                
+                resultItem.innerHTML = `
+                    <div class="question-text">${index + 1}. ${question.question}</div>
+                    <div class="user-answer">Tu respuesta: ${userAnswers[index] !== null ? question.options[userAnswers[index]] : 'No respondida'}</div>
+                    <div class="correct-answer">Respuesta correcta: ${question.options[question.correctAnswer]}</div>
+                `;
+                
+                resultsDetails.appendChild(resultItem);
+            });
+        }
+
+        function restartQuiz() {
+            // Reiniciar variables
+            currentQuestionIndex = 0;
+            selectedQuestions = [];
+            userAnswers = [];
+            quizCompleted = false;
+            
+            // Limpiar campos
+            studentNameInput.value = '';
+            
+            // Volver a la pantalla de bienvenida
+            resultsScreen.classList.remove('active');
+            welcomeScreen.classList.add('active');
+            
+            // Deshabilitar botón de inicio
+            startBtn.disabled = true;
+        }
+    </script>
+</body>
+</html>
